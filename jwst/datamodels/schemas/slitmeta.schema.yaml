@@ -66,6 +66,7 @@ type: object
         source_type:
           title: Source type (point/extended)
           type: string
+          enum: [EXTENDED, POINT, UNKNOWN]
           fits_keyword: SRCTYPE
           fits_hdu: SCI
         source_xpos:
