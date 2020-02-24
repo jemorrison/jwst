@@ -2730,7 +2730,7 @@ def do_extract1d(input_model, ref_dict, smoothing_length=None,
 
         if was_source_model:            # from a SourceModelContainer?
             slits = [input_model]
-        else isinstance(input_model, datamodels.MultiSlitModel):
+        elif isinstance(input_model, datamodels.MultiSlitModel):
             slits = input_model.slits
 #        elif isinstance(input_model, datamodels.MultiSlitModel):
 #            slits = input_model.slits
@@ -2881,7 +2881,7 @@ def do_extract1d(input_model, ref_dict, smoothing_length=None,
 #        if isinstance(input_model, (datamodels.ImageModel,
 #                                    datamodels.DrizProductModel)):
 
-        if isinstance(input_model, (datamodels.ImageModel)):
+        if isinstance(input_model, datamodels.ImageModel):
 
             # The following 2 lines are a temporary hack to get NIRSpec
             # fixed-slit exposures containing just 1 slit to make it
