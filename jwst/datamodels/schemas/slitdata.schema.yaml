@@ -3,7 +3,6 @@
 $schema: "http://stsci.edu/schemas/fits-schema/fits-schema"
 id: "http://stsci.edu/schemas/jwst_datamodel/slitdata.schema"
 allOf:
-- $ref: slitmeta.schema
 - type: object
   properties:
     data:
@@ -49,6 +48,7 @@ allOf:
       fits_hdu: WHT
       default: 0.0
       datatype: float32
+- $ref: slitmeta.schema
 - $ref: variance.schema
 - $ref: pathlosscorr.schema
 - $ref: bunit.schema
