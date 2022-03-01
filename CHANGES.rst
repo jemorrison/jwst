@@ -62,12 +62,20 @@ ramp_fitting
   the various flavors of variance and ERR stored in the output
   products [#6715]
 
+
 reset
 -----
 
 - Reading nints and ngroups from  model.meta for reset reference file and data instead of using the
   shape of the data to define these values [#6749]
-  
+
+
+residual_fringe
+---------------
+
+- Replaced fitting the background with an astropy fitting package [#6739]
+
+
 set_telescope_pointing
 ----------------------
 
