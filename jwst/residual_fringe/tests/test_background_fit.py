@@ -1,6 +1,7 @@
 """
 Unit test for Residual Fringe Correction fitting of the background
 """
+import pytest
 
 from pathlib import Path
 
@@ -30,13 +31,8 @@ def read_fit_column(file):
     assert_allclose(bg_fit, bg_fit2, atol=0.001)
 
 
-def test_background_fit():
+@pytest.mark.parametrize("file", ['good_col.fits', 'edge_col.fits'])
+def test_background_fit(file):
     """ test fit_1d_background_complex"""
 
-    # test a redefined good column
-    file1 = 'residual_col_633.fits'
-    read_fit_column(file1)
-
-    # test a redefined edge column (sometimes tricky to fit)
-    file2 = 'residual_col_433.fits'
-    read_fit_column(file2)
+    read_fit_column(file)
