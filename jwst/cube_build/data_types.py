@@ -59,7 +59,6 @@ class DataTypes:
             self.output_name = self.build_product_name(filename)
 
         elif isinstance(input_models, ModelContainer):
-            self.output_name = "Temp"
             self.input_models = input_models
             if not single:  # find the name of the output file from the association
                 self.output_name = input_models.asn_table["products"][0]["name"]
@@ -73,7 +72,7 @@ class DataTypes:
         if output_file is not None:
             self.output_name = Path(output_file).stem
 
-        if output_dir is not None:
+        if output_dir is not None and self.output_name is not None:
             self.output_name = output_dir + "/" + self.output_name
 
     def build_product_name(self, filename):

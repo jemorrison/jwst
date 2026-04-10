@@ -138,7 +138,7 @@ class IFUCubeData:
         self.skip_dqflagging = pars_cube.get("skip_dqflagging")
         self.suffix = pars_cube.get("suffix")
         self.num_bands = 0
-        self.output_name = ""
+        self.output_name = None
 
         self.wavemin_user = False  # Check for NIRSpec if user has set wavelength limits
         self.wavemax_user = False
@@ -220,7 +220,7 @@ class IFUCubeData:
     # ________________________________________________________________________________
     def define_cubename(self):
         """
-        Determine the suffix name consisting of channels/sub channels or gratings/filters
+        Determine the suffix name consisting of channels/sub channels or gratings/filters.
 
         The base name is defined by the pipeline.
         Cube_build determines which channels, bands, gratings, or filters are used to make
@@ -231,6 +231,7 @@ class IFUCubeData:
         suffix : str
             Output suffix of the IFU cube.
         """
+        cb_suffix = ""
         if self.instrument == "MIRI":
             # Check to see if the output base name already contains the
             # field "clear", which sometimes shows up in IFU product
@@ -270,18 +271,15 @@ class IFUCubeData:
 
             if self.coord_system == "internal_cal":
                 cb_suffix += "_internal"
-            elif self.output_type == "single":
-                cb_suffix += "_single"
 
         elif self.instrument == "NIRSPEC":
             # Check to see if the output base name already has a grating/prism
             # suffix attached. If so, strip it off, and let the following logic
             # add all necessary grating and filter suffixes.
-            # JEM 4/7/206  DO WE WANT THIS ?  Commenting out for now
-            # basename = self.output_name_base
-            # suffix = basename[basename.rfind("_") + 1 :]
-            # if suffix in ["g140m", "g235m", "g395m", "g140h", "g235h", "g395h", "prism"]:
-            #    self.output_name_base = basename[: basename.rfind("_")]
+            basename = self.output_name_base
+            suffix = basename[basename.rfind("_") + 1 :]
+            if suffix in ["g140m", "g235m", "g395m", "g140h", "g235h", "g395h", "prism"]:
+                self.output_name_base = basename[: basename.rfind("_")]
 
             fg_name = "_"
             for i in range(len(self.list_par1)):
@@ -291,13 +289,10 @@ class IFUCubeData:
             fg_name = fg_name.lower()
             cb_suffix = fg_name
 
-            if self.output_type == "single":
-                cb_suffix += "_single"
-            elif self.coord_system == "internal_cal":
+            if self.coord_system == "internal_cal":
                 cb_suffix += "_internal"
 
-        if self.output_type != "single":
-            log.info(f"Output Suffix Name: {cb_suffix}")
+        log.info(f"Output Suffix: {cb_suffix}")
 
         return cb_suffix
 
@@ -2659,7 +2654,8 @@ class IFUCubeData:
             )
 
         ifucube_model.update(model_ref)
-        ifucube_model.meta.filename = self.output_name
+        if self.output_name is not None:
+            ifucube_model.meta.filename = self.output_name
         print("before blending", ifucube_model.meta.filename)
 
         # Call model_blender if there are multiple inputs
@@ -2683,23 +2679,14 @@ class IFUCubeData:
 
         # single files are created for a single band,
         if self.output_type == "single":
-            with datamodels.open(model_ref) as input_ref:
-                # define the cubename for each single
-                filename = input_ref.meta.filename
-                indx = filename.rfind(".fits")
-                self.output_name_base = filename[:indx]
-                self.output_file = None
-                newname = self.define_cubename()
-                ifucube_model.meta.filename = newname
-
-                if self.instrument == "MIRI":
-                    outchannel = self.list_par1[0]
-                    outband = self.list_par2[0]
-                    ifucube_model.meta.instrument.channel = outchannel
-                    ifucube_model.meta.instrument.band = outband.upper()
-                else:
-                    outgrating = self.list_par1[0]
-                    ifucube_model.meta.instrument.grating = outgrating.upper()
+            if self.instrument == "MIRI":
+                outchannel = self.list_par1[0]
+                outband = self.list_par2[0]
+                ifucube_model.meta.instrument.channel = outchannel
+                ifucube_model.meta.instrument.band = outband.upper()
+            else:
+                outgrating = self.list_par1[0]
+                ifucube_model.meta.instrument.grating = outgrating.upper()
 
         ifucube_model.meta.wcsinfo.crval1 = self.crval1
         ifucube_model.meta.wcsinfo.crval2 = self.crval2
@@ -2770,10 +2757,6 @@ class IFUCubeData:
         # weight_power is needed for single cubes. Linear Wavelengths
         # if non-linear wavelengths then this will be None
         ifucube_model.meta.ifu.weight_power = self.weight_power
-
-        with datamodels.open(model_ref) as input_ref:
-            ifucube_model.meta.bunit_data = input_ref.meta.bunit_data
-            ifucube_model.meta.bunit_err = input_ref.meta.bunit_err
 
         if self.interpolation == "drizzle":
             # stick in values of 0, otherwise it is NaN and
